@@ -5,29 +5,33 @@ import { redirect } from "next/navigation";
 
 export default async function DashboardLayout({
   children,
-  params
-}:{
+  params,
+}: {
   children: React.ReactNode;
-  params: {storeId: string}
+  params: Promise<{ storeId: string }>; // 👈 params e Promise
 }) {
+  const { storeId } = await params; // 👈 await obligatoriu aici
   const { userId } = await auth();
+
   if (!userId) {
-    redirect('/sign-in')
+    redirect("/sign-in");
   }
+
   const store = await prismadb.store.findFirst({
     where: {
-      id: params.storeId,
-      userId
-    }
+      id: storeId,
+      userId,
+    },
   });
-  if (!store){
-    redirect('/')
+
+  if (!store) {
+    redirect("/");
   }
+
   return (
     <>
-    <Navbar/>
-    {children}
+      <Navbar />
+      {children}
     </>
-  )
+  );
 }
-
