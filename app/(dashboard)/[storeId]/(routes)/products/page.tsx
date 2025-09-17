@@ -4,9 +4,10 @@ import prismadb from '@/lib/prismadb';
 import { ProductClient } from './components/client';
 import { ProductColumn } from './components/columns';
 
-const ProductsPage = async ({ params }: { params: { storeId: string } }) => {
+const ProductsPage = async ({ params }: { params: Promise<{ storeId: string }> }) => {
+  const { storeId } = await params;
   const products = await prismadb.product.findMany({
-    where: { storeId: params.storeId },
+    where: { storeId: storeId },
     include:{
       category:true,
       size:true,
@@ -22,7 +23,10 @@ const ProductsPage = async ({ params }: { params: { storeId: string } }) => {
     name: item.name,
     isArchived: item.isArchived,
     isFeatured: item.isFeatured,
-    price: item.price,
+    price: item.price.toString(),
+    category: item.category?.name || 'No category',
+    size: item.size?.name || 'No size',
+    color: item.color?.name || 'No color',
     createdAt: format(item.createdAt, 'MMMM do, yyyy'),
   }));
 

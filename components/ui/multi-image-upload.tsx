@@ -7,14 +7,14 @@ import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import { ImagePlus, Trash } from 'lucide-react';
 
-interface ImageUploadProps {
+interface MultiImageUploadProps {
   disabled?: boolean;
-  onChange: (value: string) => void;
-  onRemove: () => void;
-  value: string;
+  onChange: (value: string[]) => void;
+  onRemove: (url: string) => void;
+  value: string[];
 }
 
-const ImageUpload: React.FC<ImageUploadProps> = ({
+const MultiImageUpload: React.FC<MultiImageUploadProps> = ({
   disabled,
   onChange,
   onRemove,
@@ -28,7 +28,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
 
   // Debug: Log the current value
   useEffect(() => {
-    console.log("ImageUpload - Current value:", value);
+    console.log("MultiImageUpload - Current value:", value);
   }, [value]);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -50,7 +50,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
     
     if (secureUrl) {
       console.log("Setting image URL:", secureUrl);
-      onChange(secureUrl);
+      onChange([...value, secureUrl]);
     } else {
       console.error("Invalid upload result - no secure URL found:", result);
     }
@@ -62,33 +62,27 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
 
   return (
     <div>
-      {/* Debug info */}
-      {value && (
-        <div className="mb-2 p-2 bg-gray-100 rounded text-xs">
-          <strong>Debug:</strong> Image URL: {value}
-        </div>
-      )}
-      
-      <div className="mb-4 flex items-center gap-4">
-        {value && (
-          <div className="relative w-[200px] h-[200px] rounded-md overflow-hidden border-2 border-gray-300">
+      <div className="mb-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        {value.map((url) => (
+          <div key={url} className="relative w-[200px] h-[200px] rounded-md overflow-hidden">
             <div className="z-10 absolute top-2 right-2">
               <Button
                 type="button"
-                onClick={onRemove}
+                onClick={() => onRemove(url)}
                 variant="destructive"
                 size="sm"
               >
                 <Trash className="h-4 w-4" />
               </Button>
             </div>
-            <Image fill className="object-cover" alt="Image" src={value} />
+            <Image fill className="object-cover" alt="Image" src={url} />
           </div>
-        )}
+        ))}
       </div>
 
       <CldUploadWidget 
-        onUpload={onUpload}
+        onUpload={onUpload} 
+        uploadPreset="preset1324"
         onError={(error) => {
           console.error("Cloudinary upload error:", error);
         }}
@@ -99,9 +93,9 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
           console.log("Cloudinary widget closed");
         }}
         options={{
-          maxFiles: 1,
+          maxFiles: 10,
           sources: ['local'],
-          multiple: false,
+          multiple: true,
         }}
       >
         {({ open }) => (
@@ -115,7 +109,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
             variant="secondary"
           >
             <ImagePlus className="h-4 w-4 mr-2" />
-            Upload an Image
+            Upload Images
           </Button>
         )}
       </CldUploadWidget>
@@ -123,4 +117,4 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   );
 };
 
-export default ImageUpload;
+export default MultiImageUpload;

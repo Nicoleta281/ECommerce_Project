@@ -24,6 +24,7 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'react-hot-toast';
 import { AlertModal } from '@/components/modals/alert-modal';
 import ImageUpload from '@/components/ui/image-upload';
+import SimpleImageUpload from '@/components/ui/simple-image-upload';
 
 const formSchema = z.object({
   label: z.string().min(1),
@@ -60,6 +61,8 @@ export const BillboardForm = ({ initialData }: BillboardFormProps) => {
   const onSubmit = async (data: BillBoardFormValues) => {
     try {
       setLoading(true);
+      console.log("Submitting billboard data:", data);
+      
       if (initialData) {
         await axios.patch(
           `/api/${params.storeId}/billboards/${params.billboardId}`,
@@ -72,6 +75,7 @@ export const BillboardForm = ({ initialData }: BillboardFormProps) => {
       router.push(`/${params.storeId}/billboards`);
       toast.success(toastMessage);
     } catch (error) {
+      console.error("Billboard submission error:", error);
       toast.error('something went wrong');
     } finally {
       setLoading(false);
@@ -131,7 +135,7 @@ export const BillboardForm = ({ initialData }: BillboardFormProps) => {
     <FormItem>
       <FormLabel>Background image</FormLabel>
       <FormControl>
-        <ImageUpload
+        <SimpleImageUpload
           value={field.value}
           disabled={loading}
           onChange={field.onChange}
