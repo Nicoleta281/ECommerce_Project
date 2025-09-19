@@ -4,16 +4,23 @@ import prismadb from '@/lib/prismadb';
 
 export async function GET(
   req: Request,
-  { params }: { params: { productId: string } }
+  context: { params: Promise<{ productId: string; storeId: string }> }
 ) {
   try {
-    if (!params.productId) {
+    const { productId, storeId } = await context.params;
+    
+    if (!productId) {
       return new NextResponse('Product id is required', { status: 400 });
+    }
+
+    if (!storeId) {
+      return new NextResponse('Store id is required', { status: 400 });
     }
 
     const product = await prismadb.product.findUnique({
       where: {
-        id: params.productId,
+        id: productId,
+        storeId: storeId,
       },
       include: {
         images: true,
@@ -32,10 +39,11 @@ export async function GET(
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { productId: string; storeId: string } }
+  context: { params: Promise<{ productId: string; storeId: string }> }
 ) {
   try {
     const { userId } = await auth();
+    const { productId, storeId } = await context.params;
 
     const body = await req.json();
     console.log('Product PATCH request body:', body);
@@ -138,10 +146,11 @@ export async function PATCH(
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { productId: string; storeId: string } }
+  context: { params: Promise<{ productId: string; storeId: string }> }
 ) {
   try {
     const { userId } = await auth();
+    const { productId, storeId } = await context.params;
 
     if (!userId) {
       return new NextResponse('Unauthenticated', { status: 403 });

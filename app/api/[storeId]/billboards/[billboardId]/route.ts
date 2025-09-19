@@ -4,16 +4,23 @@ import prismadb from '@/lib/prismadb';
 
 export async function GET(
   req: Request,
-  { params }: { params: { billboardId: string } }
+  context: { params: Promise<{ billboardId: string; storeId: string }> }
 ) {
   try {
-    if (!params.billboardId) {
+    const { billboardId, storeId } = await context.params;
+    
+    if (!billboardId) {
       return new NextResponse('Billboard ID is Required', { status: 400 });
+    }
+
+    if (!storeId) {
+      return new NextResponse('Store ID is Required', { status: 400 });
     }
 
     const billboard = await prismadb.billboard.findUnique({
       where: {
-        id: params.billboardId,
+        id: billboardId,
+        storeId: storeId,
       },
     });
 
@@ -26,17 +33,11 @@ export async function GET(
 
 export async function DELETE(
   req: Request,
-  {
-    params,
-  }: {
-    params: {
-      billboardId: string;
-      storeId: string;
-    };
-  }
+  context: { params: Promise<{ billboardId: string; storeId: string }> }
 ) {
   try {
     const { userId } = await auth();
+    const { billboardId, storeId } = await context.params;
 
     if (!userId) {
       return new NextResponse('Unauthenticated', { status: 403 });

@@ -7,16 +7,19 @@ import { getTotalRevenue } from "@/actions/get-total-revenue";
 import { getSalesCount } from "@/actions/get-sales-count";
 import { formatDate } from "@/lib/utils";
 import { getStockCount } from "@/actions/get-stock-count";
+import { getGraphRevenue } from "@/actions/get-graph-revenue";
 import { Overview } from "@/components/overview";
 interface DashboardPageProps {
-  params: { storeId: string }; 
+  params: Promise<{ storeId: string }>; 
 }
 
 const DashboardPage :React.FC<DashboardPageProps> = async ({
   params}) =>{
-    const totalRevenue = await getTotalRevenue(params.storeId);
-    const salesCount = await getSalesCount(params.storeId);
-    const stockCount = await getStockCount(params.storeId);
+    const { storeId } = await params;
+    const totalRevenue = await getTotalRevenue(storeId);
+    const salesCount = await getSalesCount(storeId);
+    const stockCount = await getStockCount(storeId);
+    const graphRevenue = await getGraphRevenue(storeId);
 
     return (
     <div className="flex-col">
@@ -71,19 +74,15 @@ const DashboardPage :React.FC<DashboardPageProps> = async ({
             </CardContent>
           </Card>
         </div>
+        <Card className="col-span-4">
+          <CardHeader>
+            <CardTitle>Overview</CardTitle>
+          </CardHeader>
+          <CardContent className="pl-2">
+            <Overview data={graphRevenue}/>
+          </CardContent>
+        </Card>
       </div>
-<Card>
-  <div className="col-span-4">
-    <CardHeader>
-      <CardTitle>
-        <CardContent className="pl-2">
-          <Overview data={[]}/>
-        </CardContent>
-      </CardTitle>
-    </CardHeader>
-
-  </div>
-</Card>
     </div>
    
   );

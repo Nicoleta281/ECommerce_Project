@@ -25,7 +25,7 @@ export async function GET(
 }
 export async function POST(
   req: Request,
-  context: { params: { storeId: string } }
+  context: { params: Promise<{ storeId: string }> }
 ) {
   try {
     const { userId } = await auth();
@@ -43,7 +43,7 @@ export async function POST(
       return new NextResponse("Billboard ID is required", { status: 400 });
     }
 
-    const { storeId } = context.params;
+    const { storeId } = await context.params;
 
     if (!storeId) {
       return new NextResponse("Store id is required", { status: 400 });

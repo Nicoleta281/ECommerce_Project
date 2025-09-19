@@ -25,7 +25,7 @@ export async function GET(
 }
 export async function POST(
   req: Request,
-  context: { params: { storeId: string } }
+  context: { params: Promise<{ storeId: string }> }
 ) {
   try {
     const { userId } = await auth();

@@ -4,10 +4,11 @@ import prismadb from '@/lib/prismadb';
 
 export async function POST(
   req: Request,
-  { params }: { params: { storeId: string } }
+  context: { params: Promise<{ storeId: string }> }
 ) {
   try {
     const { userId } = await auth();
+    const { storeId } = await context.params;
 
     const body = await req.json();
     console.log('Order POST request body:', body);
@@ -35,13 +36,13 @@ export async function POST(
       return new NextResponse('Address is required', { status: 400 });
     }
 
-    if (!params.storeId) {
+    if (!storeId) {
       return new NextResponse('Store id is required', { status: 400 });
     }
 
     const storeByUserId = await prismadb.store.findFirst({
       where: {
-        id: params.storeId,
+        id: storeId,
         userId,
       },
     });
@@ -55,7 +56,7 @@ export async function POST(
         phone,
         address,
         isPaid: isPaid ? true : false,
-        storeId: params.storeId,
+        storeId: storeId,
         orderItems: {
           create: orderItems.map((orderItem: { productId: string }) => ({
             productId: orderItem.productId,
@@ -77,16 +78,18 @@ export async function POST(
 
 export async function GET(
   req: Request,
-  { params }: { params: { storeId: string } }
+  context: { params: Promise<{ storeId: string }> }
 ) {
   try {
-    if (!params.storeId) {
+    const { storeId } = await context.params;
+    
+    if (!storeId) {
       return new NextResponse('Store id is required', { status: 400 });
     }
 
     const orders = await prismadb.order.findMany({
       where: {
-        storeId: params.storeId,
+        storeId: storeId,
       },
       include: {
         orderItems: {
